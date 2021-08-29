@@ -1,18 +1,72 @@
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
+const cors = require("cors");
+const fs = require("fs");
 
+app.use(cors());
 app.use(express.json());
 
 const productSchema = new mongoose.Schema({
   title: String,
-  price: String,
+  price: Number,
   description: String,
   category: String,
   image: String,
 });
 
 const Product = mongoose.model("Product", productSchema);
+
+//get products
+app.get("/products", (req, res) => {
+  const { min, max, category, title } = req.query;
+
+  Product.find(
+    {
+      $or: [
+        { min: min },
+        { max: max },
+        { category: category },
+        { title: title },
+      ],
+    },
+    (err, products) => {
+      if (min) {
+        products = products.filter((p) => p.price > min);
+      }
+
+      if (max) {
+        products = products.filter((p) => p.price < max);
+      }
+
+      if (category) {
+        products = products.filter((p) =>
+          p.category.toLowerCase().includes(category.toLowerCase())
+        );
+      }
+
+      if (title) {
+        products = products.filter((p) =>
+          p.title.toLowerCase().includes(title.toLowerCase())
+        );
+      }
+
+      if (products.length > 0) {
+        res.send(products);
+      } else {
+        res.send("There are no matching products!");
+      }
+    }
+  );
+});
+
+//get one product
+app.get("/products/:id", (req, res) => {
+  const { id } = req.params;
+  Product.findById(id, (err, product) => {
+    res.send(product);
+  });
+});
 
 // add product to DB
 app.post("/products", (req, res) => {
@@ -39,13 +93,35 @@ app.put("/products/:id", (req, res) => {
     id,
     { title, price, description, category, image },
     (err, product) => {
-      res.send(product);
+      res.send(`${title} as been updated`);
     }
   );
 });
 
+app.delete("/products/:id", (req, res) => {
+  const { id } = req.params;
+  Product.findByIdAndDelete(id, (err, product) => {
+    res.send(`${product} was deleted`);
+  });
+});
+
+//initialize DB
+function initProducts() {
+  Product.findOne((err, data) => {
+    if (!data) {
+      fs.readFile("./products.json", "utf8", (err, data) => {
+        if (!err) {
+          let initProducts = JSON.parse(data);
+          //console.log("Initialization");
+          Product.insertMany(initProducts, (err, data) => {});
+        }
+      });
+    }
+  });
+}
+initProducts();
 mongoose.connect(
-  "mongodb://localhost/gocode_shop",
+  "mongodb+srv://keinar:K305541153e!@cluster0.izwtp.mongodb.net/goCodeShop?retryWrites=true&w=majority",
   { useNewUrlParser: true, useCreateIndex: true, useUnifiedTopology: true },
   () => {
     app.listen(8080);
