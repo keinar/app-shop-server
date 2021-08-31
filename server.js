@@ -5,6 +5,7 @@ const cors = require("cors");
 const fs = require("fs");
 const dotenv = require("dotenv").config();
 
+app.use(express.static("client/build"));
 app.use(cors());
 app.use(express.json());
 
@@ -19,7 +20,7 @@ const productSchema = new mongoose.Schema({
 const Product = mongoose.model("Product", productSchema);
 
 //get products
-app.get("/products", (req, res) => {
+app.get("/api/products", (req, res) => {
   const { min, max, category, title } = req.query;
 
   Product.find(
@@ -62,7 +63,7 @@ app.get("/products", (req, res) => {
 });
 
 //get one product
-app.get("/products/:id", (req, res) => {
+app.get("/api/products/:id", (req, res) => {
   const { id } = req.params;
   Product.findById(id, (err, product) => {
     res.send(product);
@@ -70,7 +71,7 @@ app.get("/products/:id", (req, res) => {
 });
 
 // add product to DB
-app.post("/products", (req, res) => {
+app.post("/api/products", (req, res) => {
   const { title, price, description, category, image } = req.body;
 
   if ((product = new Product())) {
@@ -87,7 +88,7 @@ app.post("/products", (req, res) => {
 });
 
 // update product to DB
-app.put("/products/:id", (req, res) => {
+app.put("/api/products/:id", (req, res) => {
   const { id } = req.params;
   const { title, price, description, category, image } = req.body;
   Product.findByIdAndUpdate(
@@ -99,11 +100,15 @@ app.put("/products/:id", (req, res) => {
   );
 });
 
-app.delete("/products/:id", (req, res) => {
+app.delete("/api/products/:id", (req, res) => {
   const { id } = req.params;
   Product.findByIdAndDelete(id, (err, product) => {
     res.send(`${product} was deleted`);
   });
+});
+
+app.get("*", (req, res) => {
+  res.sendFile(__dirname + "/client/build/index.html");
 });
 
 //initialize DB
@@ -120,6 +125,7 @@ function initProducts() {
     }
   });
 }
+
 initProducts();
 mongoose.connect(
   `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/${process.env.DB_NAME}?retryWrites=true&w=majority`,

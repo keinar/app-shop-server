@@ -1,0 +1,7 @@
+nav.product-filter{
+    margin: 5px;
+    display: flex;
+    justify-content: center;
+    padding: 10px;
+}
+
