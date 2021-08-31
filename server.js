@@ -3,6 +3,7 @@ const app = express();
 const mongoose = require("mongoose");
 const cors = require("cors");
 const fs = require("fs");
+const dotenv = require("dotenv").config();
 
 app.use(cors());
 app.use(express.json());
@@ -121,7 +122,7 @@ function initProducts() {
 }
 initProducts();
 mongoose.connect(
-  "mongodb+srv://keinar:K305541153e!@cluster0.izwtp.mongodb.net/goCodeShop?retryWrites=true&w=majority",
+  `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/${process.env.DB_NAME}?retryWrites=true&w=majority`,
   { useNewUrlParser: true, useCreateIndex: true, useUnifiedTopology: true },
   () => {
     app.listen(8080);
