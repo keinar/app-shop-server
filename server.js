@@ -22,7 +22,7 @@ const Product = mongoose.model("Product", productSchema);
 //get products
 app.get("/api/products", (req, res) => {
   const { min, max, category, title } = req.query;
-
+  console.log("test");
   Product.find(
     {
       $or: [
