@@ -125,6 +125,6 @@ mongoose.connect(
   `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/${process.env.DB_NAME}?retryWrites=true&w=majority`,
   { useNewUrlParser: true, useCreateIndex: true, useUnifiedTopology: true },
   () => {
-    app.listen(8080);
+    app.listen(process.env.PORT || 8080);
   }
 );
